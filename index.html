@@ -34,6 +34,7 @@
     --surface: #13161f;
     --surface2: #1a1e2b;
     --border: rgba(255,255,255,0.07);
+    --nav-bg: rgba(11,13,18,0.85);
     --accent: #7c6dfa;
     --accent2: #a78bfa;
     --accent3: #38bdf8;
@@ -41,6 +42,17 @@
     --muted: #7b82a0;
     --tag-bg: rgba(124,109,250,0.12);
     --radius: 14px;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f4f7fb;
+    --surface: #ffffff;
+    --surface2: #eef2f8;
+    --border: rgba(11, 22, 40, 0.12);
+    --nav-bg: rgba(244,247,251,0.9);
+    --text: #111827;
+    --muted: #4b5563;
+    --tag-bg: rgba(124,109,250,0.12);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -63,7 +75,7 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 40px;
     height: 60px;
-    background: rgba(11,13,18,0.85);
+    background: var(--nav-bg);
     backdrop-filter: blur(18px);
     border-bottom: 1px solid var(--border);
   }
@@ -74,12 +86,43 @@
     background: linear-gradient(135deg, var(--accent2), var(--accent3));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
   .nav-links { display: flex; gap: 28px; }
   .nav-links a {
     color: var(--muted); font-size: .85rem; text-decoration: none;
     letter-spacing: .04em; font-weight: 500; transition: color .2s;
   }
   .nav-links a:hover { color: var(--text); }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .theme-toggle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    background: var(--tag-bg);
+  }
 
   /* ── HERO ── */
   .hero {
@@ -308,6 +351,78 @@
     gap: 16px;
     margin-top: 22px;
   }
+  .compare-block {
+    margin-top: 26px;
+  }
+  .compare-model-panel {
+    display: none;
+  }
+  .compare-model-panel.active {
+    display: block;
+    animation: panelFade .24s ease;
+  }
+  @keyframes panelFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+  .compare-block-title {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .model-viewer {
+    margin-top: 22px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .model-viewer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .model-current {
+    font-size: .86rem;
+    color: var(--muted);
+  }
+  .model-current strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .model-nav {
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: .78rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .model-nav:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+  .model-slider-wrap {
+    margin-top: 12px;
+  }
+  .model-slider {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+  .model-slider-labels {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 6px;
+    font-size: .72rem;
+    color: var(--muted);
+    text-align: center;
+  }
   .compare-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -471,9 +586,12 @@
     nav { padding:0 20px; }
     .nav-links { gap:16px; }
     .nav-links a { font-size:.78rem; }
+    .theme-toggle { width: 32px; height: 32px; font-size: .95rem; }
     .teaser-grid { grid-template-columns:1fr 1fr; }
     .comparison-grid { grid-template-columns:1fr; }
     .compare-grid { grid-template-columns:1fr; }
+    .model-slider-labels { display: none; }
+    .model-viewer-head { flex-wrap: wrap; }
     .ablation-row { grid-template-columns:1fr 1fr; font-size:.8rem; }
   }
 </style>
@@ -482,13 +600,17 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">LWD</div>
-  <div class="nav-links">
-    <a href="#abstract">Abstract</a>
-    <a href="#method">Method</a>
-    <a href="#results">Results</a>
-    <a href="#ablation">Ablation</a>
-    <a href="#citation">Cite</a>
+  <div class="nav-left">
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light mode" title="Toggle theme">🌙</button>
+    <div class="nav-logo">LWD</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="#abstract">Abstract</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#citation">Cite</a>
+    </div>
   </div>
 </nav>
 
@@ -499,8 +621,8 @@
   <p class="subtitle">For Ultra-High-Resolution Image Synthesis</p>
   <p class="authors">
     <a href="https://luigisigillo.github.io">Luigi Sigillo <sup>1,2,3</sup></a> &thinsp;&middot;&thinsp;
-    <a href="https://scholar.google.com/citations?user=1234567890">Shengfeng He <sup>2</sup></a> &thinsp;&middot;&thinsp;
-    <a href="https://scholar.google.com/citations?user=0987654321">Danilo Comminiello <sup>1</sup></a>
+    <a href="https://shengfenghe.github.io/">Shengfeng He <sup>2</sup></a> &thinsp;&middot;&thinsp;
+    <a href="https://danilocomminiello.site.uniroma1.it/">Danilo Comminiello <sup>1</sup></a>
   </p>
   <p class="affiliations"><sup>1</sup>Sapienza University of Rome &nbsp;&middot;&nbsp; <sup>2</sup>Singapore Management University &nbsp;&middot;&nbsp; <sup>3</sup>EMBL</p>
   <div class="buttons">
@@ -535,7 +657,7 @@ High-resolution image synthesis remains a core challenge in generative modeling,
     <div class="highlight-grid">
       <div class="highlight-card">
         <div class="hc-icon">🌊</div>
-        <div class="hc-title">Spectrally-Aware VAE</div>
+        <div class="hc-title">VAE Fine-Tuning with Scale-Consistency Loss</div>
         <div class="hc-desc">Fine-tuned with a scale-consistency loss to create a clean latent space free of HF compression artifacts.</div>
       </div>
       <div class="highlight-card">
@@ -576,11 +698,17 @@ High-resolution image synthesis remains a core challenge in generative modeling,
         <div class="step-num">01</div>
         <div>
           <div class="step-tag">Stage 1</div>
-          <h3>Spectrally-Aware VAE (SA-VAE)</h3>
+          <h3>VAE Fine-Tuning with Scale-Consistency Loss</h3>
           <p>Standard VAEs optimize for reconstruction, not spectral accuracy. The encoder/decoder introduces its own HF noise and aliasing, making the latent code "dirty." We cannot guide training with garbage saliency maps.</p>
           <p>We fine-tune the VAE with a <strong>multi-resolution scale-consistency loss</strong>. The key insight: real-world structures are self-similar across scales, while compression artifacts are not. We enforce that encoding a downscaled image should be spectrally identical to downscaling the full-res encoding.</p>
           <div class="formula-box">
-            ℒ<sub>VAE</sub> = ‖D(z) − x‖² + α‖D(E(z<sub>down</sub>)) − x<sub>down</sub>‖² + β D<sub>KL</sub>(q(z|x)‖p(z)) + λ ℒ<sub>LPIPS</sub>
+$$
+\mathcal{L}_{\text{VAE}} = 
+\underbrace{\|D(z) - x\|^2_2}_{\text{Reconstruction}} 
++ \alpha \underbrace{\|D(E(z_{\text{down}})) - x_{\text{down}}\|^2_2}_{\text{Scale Consistency}} 
++ \beta \underbrace{D_{\text{KL}}(q(z \mid x) \,\|\, p(z))}_{\text{Latent Regularization}} 
++ \lambda \underbrace{\mathcal{L}_{\text{LPIPS}}(D(z), x)}_{\text{Perceptual Loss}}.
+$$
           </div>
         </div>
       </div>
@@ -593,7 +721,9 @@ High-resolution image synthesis remains a core challenge in generative modeling,
           <p>We apply a fast, <strong>non-trainable</strong> 1-level Discrete Wavelet Transform (Haar wavelet) to the noisy latent z<sub>t</sub> at each training step. This decomposes it into four subbands: LL (approximation), LH (horizontal HF), HL (vertical HF), HH (diagonal HF).</p>
           <p>We aggregate the detail subbands into a spatial energy map — bright regions are structurally rich (hair, foliage), dark regions are simple (sky, flat walls).</p>
           <div class="formula-box">
-            E(i,j) = (1/C) · Σ<sub>c</sub> [ (z<sup>c,i,j</sup><sub>LH</sub>)² + (z<sup>c,i,j</sup><sub>HL</sub>)² + (z<sup>c,i,j</sup><sub>HH</sub>)² ]
+$$
+E(i,j) = \frac{1}{C} \sum_c \left[ (z_{LH}^{c,i,j})^2 + (z_{HL}^{c,i,j})^2 + (z_{HH}^{c,i,j})^2 \right].
+$$
           </div>
         </div>
       </div>
@@ -606,10 +736,18 @@ High-resolution image synthesis remains a core challenge in generative modeling,
           <p>High-frequency detail is the first thing destroyed by noise. At high timesteps (lots of noise), the saliency map is itself noisy — we must not rely on it for fine-grained masking. Our mask follows a curriculum:</p>
           <p><strong>High noise (high t):</strong> Mask less — force the model to learn global structure (LL band). <strong>Low noise (low t):</strong> Mask aggressively — focus only on the most salient HF regions. The threshold tightens as detail becomes recoverable.</p>
           <div class="formula-box">
-            M<sub>t</sub>(i,j) = 1 &nbsp;if&nbsp; T · (A<sub>wavelet</sub>(i,j) + ℓ) ≥ t &nbsp;&nbsp;else&nbsp; 0
+$$
+M_t(i,j) =
+\begin{cases}
+1 & \text{if } T \cdot (A_{\text{wavelet}}(i,j) + \ell) \geq t \\
+0 & \text{otherwise}
+\end{cases}.
+$$
           </div>
           <div class="formula-box" style="margin-top:10px;">
-            ℒ<sub>masked</sub> = ‖ M<sub>t</sub> ⊙ [(ε − z₀) − v<sub>Θ</sub>(z<sub>t</sub>, t, y)] ‖²
+$$
+\mathcal{L}_{\text{masked}} = \left\| M_t \odot \left[ (\epsilon - z_0) - v_\Theta(z_t, t, y) \right] \right\|_2^2.
+$$
           </div>
         </div>
       </div>
@@ -628,6 +766,7 @@ High-resolution image synthesis remains a core challenge in generative modeling,
     <div class="results-tabs">
       <button class="tab active" onclick="showTable('2k',this)">Aesthetic 2K</button>
       <button class="tab" onclick="showTable('4k',this)">Aesthetic 4K</button>
+      <button class="tab" onclick="showTable('laion',this)">LAION 2K</button>
     </div>
 
     <div id="table-2k" class="table-wrap">
@@ -679,102 +818,33 @@ High-resolution image synthesis remains a core challenge in generative modeling,
       </table>
     </div>
 
-    <div style="margin-top:44px;">
-      <h3 style="margin-bottom:10px;">Interactive Visual Comparison</h3>
-      <p>Drag the slider on each panel to compare baseline output against LWD-enhanced output. You can replace the image paths with your own qualitative examples anytime.</p>
-
-      <div class="compare-grid">
-        <div class="compare-card">
-          <div class="compare-title">PixArt-Sigma-XL · Sample A</div>
-          <div class="image-compare" data-start="52">
-            <img src="assets/images/comparison/0_lwd_pixart.png" alt="PixArt-Sigma-XL baseline example A" />
-            <div class="after-wrap">
-              <img src="assets/images/comparison/0_pixart.png" alt="PixArt-Sigma-XL +LWD example A" />
-            </div>
-            <div class="divider"></div>
-            <div class="handle">◀▶</div>
-            <div class="labels">
-              <span class="label">PixArt-Sigma-XL</span>
-              <span class="label">+LWD</span>
-            </div>
-            <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="Image comparison slider A" />
-          </div>
-        </div>
-
-        <div class="compare-card">
-          <div class="compare-title">PixArt-Sigma-XL · Sample B</div>
-          <div class="image-compare" data-start="60">
-            <img src="assets/images/comparison/1_lwd_pixart.png" alt="PixArt-Sigma-XL baseline example B" />
-            <div class="after-wrap">
-              <img src="assets/images/comparison/1_pixart.png" alt="PixArt-Sigma-XL +LWD example B" />
-            </div>
-            <div class="divider"></div>
-            <div class="handle">◀▶</div>
-            <div class="labels">
-              <span class="label">PixArt-Sigma-XL</span>
-              <span class="label">+LWD</span>
-            </div>
-            <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="Image comparison slider B" />
-          </div>
-        </div>
-      </div>
-    </div>
-<div class="compare-grid">
-        <div class="compare-card">
-          <div class="compare-title">SD3-Diff4k-F16 · Sample A</div>
-          <div class="image-compare" data-start="52">
-            <img src="assets/images/comparison/2_lwd_sd3.png" alt="SD3-Diff4k-F16 baseline example A" />
-            <div class="after-wrap">
-              <img src="assets/images/comparison/2_sd3.png" alt="SD3-Diff4k-F16 +LWD example A" />
-            </div>
-            <div class="divider"></div>
-            <div class="handle">◀▶</div>
-            <div class="labels">
-              <span class="label">SD3-Diff4k-F16</span>
-              <span class="label">+LWD</span>
-            </div>
-            <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="Image comparison slider A" />
-          </div>
-        </div>
-
-        <div class="compare-card">
-          <div class="compare-title">SD3-Diff4k-F16 · Sample B</div>
-          <div class="image-compare" data-start="60">
-            <img src="assets/images/comparison/3_lwd_sd3.png" alt="SD3-Diff4k-F16 baseline example B" />
-            <div class="after-wrap">
-              <img src="assets/images/comparison/3_sd3.png" alt="SD3-Diff4k-F16 +LWD example B" />
-            </div>
-            <div class="divider"></div>
-            <div class="handle">◀▶</div>
-            <div class="labels">
-              <span class="label">SD3-Diff4k-F16</span>
-              <span class="label">+LWD</span>
-            </div>
-            <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="Image comparison slider B" />
-          </div>
-        </div>
-      </div>
+    <div id="table-laion" class="table-wrap" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>FID ↓</th>
+            <th>LPIPS ↓</th>
+            <th>MAN-IQA ↑</th>
+            <th>QualiCLIP ↑</th>
+            <th>HPSv2.1 ↑</th>
+            <th>PickScore ↑</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>SDEdit</td><td>35.59</td><td>0.6456</td><td>0.3736</td><td>0.4480</td><td>30.92</td><td>22.86</td></tr>
+          <tr><td>I-Max</td><td>36.28</td><td>0.6750</td><td>0.3641</td><td>0.4139</td><td>30.62</td><td class="best">23.02</td></tr>
+          <tr><td>Diffusion-4K</td><td>37.10</td><td>0.6920</td><td>0.3550</td><td>0.4815</td><td>30.55</td><td>22.80</td></tr>
+          <tr><td>PixArt-Sigma-XL</td><td>36.58</td><td>0.6801</td><td>0.2949</td><td>0.4438</td><td>30.66</td><td>22.92</td></tr>
+          <tr><td>Sana-1.6B</td><td>35.75</td><td>0.7169</td><td>0.3666</td><td class="best">0.5796</td><td>30.42</td><td>22.83</td></tr>
+          <tr><td>Lumina-Image 2.0</td><td>54.96</td><td>0.6445</td><td>0.3663</td><td>0.4567</td><td>23.08</td><td>21.15</td></tr>
+          <tr><td>FLUX-1.dev</td><td>37.58</td><td>0.6371</td><td class="best">0.4110</td><td>0.5468</td><td>28.73</td><td>22.68</td></tr>
+          <tr><td>URAE</td><td>35.25</td><td>0.6717</td><td>0.4076</td><td>0.5423</td><td class="best">31.15</td><td>22.41</td></tr>
+          <tr class="highlight"><td>LWD + URAE</td><td class="best">32.88</td><td class="best">0.6336</td><td>0.4099</td><td>0.5356</td><td>28.78</td><td>22.43</td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- HLFR -->
-    <div style="margin-top:48px;">
-      <h3 style="margin-bottom:16px;">Frequency-Aware Analysis (HLFR)</h3>
-      <p>Baseline models <strong>over-produce high frequencies</strong> — a telltale sign of artifacting. LWD pulls the generated distribution much closer to the real-image reference across HLFR, WQS, FSIM, and MS-SSIM metrics.</p>
-      <div class="table-wrap" style="margin-top:16px;">
-        <table>
-          <thead>
-            <tr><th>Model</th><th>HLFR</th><th>RDFR ↓</th><th>WQS ↑</th><th>HFE</th><th>HFEI ↓</th><th>FSIM ↑</th><th>MS-SSIM ↑</th></tr>
-          </thead>
-          <tbody>
-            <tr><td style="color:var(--accent3)">Real Images</td><td>0.0560</td><td class="best">0.0000</td><td class="best">1.0000</td><td>0.0140</td><td class="best">0.0000</td><td class="best">1.0000</td><td class="best">1.0000</td></tr>
-            <tr><td>Sana-1.6B</td><td>0.0784</td><td>0.0558</td><td>0.4673</td><td>0.0196</td><td>0.6108</td><td>0.6128</td><td>0.1324</td></tr>
-            <tr class="highlight"><td>LWD + Sana-1.6B</td><td class="best">0.0610</td><td class="best">0.0537</td><td class="best">0.4701</td><td class="best">0.0144</td><td class="best">0.5227</td><td class="best">0.6217</td><td>0.1324</td></tr>
-            <tr><td>SD3-Diff4k-F16</td><td>0.0691</td><td>0.0470</td><td>0.4624</td><td>0.0158</td><td>0.8064</td><td>0.6155</td><td>0.1296</td></tr>
-            <tr class="highlight"><td>LWD + SD3-F16</td><td class="best">0.0555</td><td class="best">0.0437</td><td class="best">0.4735</td><td class="best">0.0144</td><td class="best">0.4826</td><td class="best">0.6245</td><td class="best">0.1521</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -784,6 +854,179 @@ High-resolution image synthesis remains a core challenge in generative modeling,
     <div class="section-label">Qualitative Comparison</div>
     <h2>What Changes Visually</h2>
     <p>The improvements are most visible in detail-rich regions: hair, fabric, foliage, fine architecture. Baseline models exhibit spectral collapse — blurring and loss of sharp edges. LWD-enhanced models preserve the intricate structures.</p>
+
+    <div style="margin-top:44px;">
+      <h3 style="margin-bottom:10px;">Interactive Visual Comparison</h3>
+      <p>Choose a model with the slider, then drag each image divider to compare baseline output against LWD-enhanced output.</p>
+
+      <div class="model-viewer" data-model-viewer>
+        <div class="model-viewer-head">
+          <button class="model-nav" type="button" data-dir="-1" aria-label="Previous model">Prev</button>
+          <div class="model-current">Viewing: <strong data-model-name>PixArt-Sigma-XL</strong></div>
+          <button class="model-nav" type="button" data-dir="1" aria-label="Next model">Next</button>
+        </div>
+        <div class="model-slider-wrap">
+          <input class="model-slider" type="range" min="0" max="3" step="1" value="0" aria-label="Choose comparison model" />
+          <div class="model-slider-labels">
+            <span>PixArt-Sigma-XL</span>
+            <span>SD3-Diff4k-F16</span>
+            <span>Sana</span>
+            <span>URAE</span>
+          </div>
+        </div>
+
+        <div class="compare-block compare-model-panel active" data-model-name="PixArt-Sigma-XL">
+          <div class="compare-grid">
+            <div class="compare-card">
+              <div class="compare-title">Sample A</div>
+              <div class="image-compare" data-start="52">
+                <img src="assets/images/comparison/0_pixart.png" alt="PixArt-Sigma-XL baseline sample A" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/0_lwd_pixart.png" alt="PixArt-Sigma-XL +LWD sample A" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">PixArt-Sigma-XL</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="PixArt sample A comparison" />
+              </div>
+            </div>
+
+            <div class="compare-card">
+              <div class="compare-title">Sample B</div>
+              <div class="image-compare" data-start="60">
+                <img src="assets/images/comparison/1_pixart.png" alt="PixArt-Sigma-XL baseline sample B" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/1_lwd_pixart.png" alt="PixArt-Sigma-XL +LWD sample B" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">PixArt-Sigma-XL</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="PixArt sample B comparison" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="compare-block compare-model-panel" data-model-name="SD3-Diff4k-F16">
+          <div class="compare-grid">
+            <div class="compare-card">
+              <div class="compare-title">Sample A</div>
+              <div class="image-compare" data-start="52">
+                <img src="assets/images/comparison/2_sd3.png" alt="SD3-Diff4k-F16 baseline sample A" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/2_lwd_sd3.png" alt="SD3-Diff4k-F16 +LWD sample A" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">SD3-Diff4k-F16</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="SD3 sample A comparison" />
+              </div>
+            </div>
+
+            <div class="compare-card">
+              <div class="compare-title">Sample B</div>
+              <div class="image-compare" data-start="60">
+                <img src="assets/images/comparison/3_sd3.png" alt="SD3-Diff4k-F16 baseline sample B" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/3_lwd_sd3.png" alt="SD3-Diff4k-F16 +LWD sample B" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">SD3-Diff4k-F16</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="SD3 sample B comparison" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="compare-block compare-model-panel" data-model-name="Sana">
+          <div class="compare-grid">
+            <div class="compare-card">
+              <div class="compare-title">Sample A</div>
+              <div class="image-compare" data-start="52">
+                <img src="assets/images/comparison/4_sana.png" alt="Sana baseline sample A" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/4_lwd_sana.png" alt="Sana +LWD sample A" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">Sana</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="Sana sample A comparison" />
+              </div>
+            </div>
+
+            <div class="compare-card">
+              <div class="compare-title">Sample B</div>
+              <div class="image-compare" data-start="60">
+                <img src="assets/images/comparison/5_sana.png" alt="Sana baseline sample B" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/5_lwd_sana.png" alt="Sana +LWD sample B" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">Sana</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="Sana sample B comparison" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="compare-block compare-model-panel" data-model-name="URAE">
+          <div class="compare-grid">
+            <div class="compare-card">
+              <div class="compare-title">Sample A</div>
+              <div class="image-compare" data-start="52">
+                <img src="assets/images/comparison/6_urae.png" alt="URAE baseline sample A" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/6_lwd_urae.png" alt="URAE +LWD sample A" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">URAE</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="URAE sample A comparison" />
+              </div>
+            </div>
+
+            <div class="compare-card">
+              <div class="compare-title">Sample B</div>
+              <div class="image-compare" data-start="60">
+                <img src="assets/images/comparison/7_urae.png" alt="URAE baseline sample B" />
+                <div class="after-wrap">
+                  <img src="assets/images/comparison/7_lwd_urae.png" alt="URAE +LWD sample B" />
+                </div>
+                <div class="divider"></div>
+                <div class="handle">◀▶</div>
+                <div class="labels">
+                  <span class="label">URAE</span>
+                  <span class="label">+LWD</span>
+                </div>
+                <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="URAE sample B comparison" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     <div class="comparison-grid">
       <div class="comp-card">
@@ -801,75 +1044,6 @@ High-resolution image synthesis remains a core challenge in generative modeling,
         <div class="comp-bullet"><span class="icon">✓</span><span><strong>Natural Textures</strong> — no tiling; foliage and hair render with spatial variety</span></div>
         <div class="comp-bullet"><span class="icon">✓</span><span><strong>Perceptual Coherence</strong> — improved FID and LPIPS confirm better global distribution match</span></div>
         <div class="comp-bullet"><span class="icon">✓</span><span>Vibrant, separated color panels; sharp architectural edges at 4K</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ABLATION -->
-<section id="ablation">
-  <div class="container">
-    <div class="section-label">Ablation Study</div>
-    <h2>Does Each Component Matter?</h2>
-    <p>We ablate each component of LWD independently on the Aesthetic-2K benchmark with SD3-F16 as the base. The mask drives the largest texture improvement (GLCM), the SC-VAE drives the largest perceptual improvement (FID). Together, they are synergistic.</p>
-
-    <div style="margin-top:28px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
-      <div class="ablation-row header">
-        <div>Configuration</div>
-        <div class="metric">FID ↓</div>
-        <div class="metric">CLIPScore ↑</div>
-        <div class="metric">Aesthetics ↑</div>
-        <div class="metric">GLCM ↑</div>
-      </div>
-      <div class="ablation-row">
-        <div class="model-name">Baseline (SD3-Diff4k-F16)</div>
-        <div class="metric">40.18</div>
-        <div class="metric">34.04</div>
-        <div class="metric">5.96</div>
-        <div class="metric">0.79</div>
-      </div>
-      <div class="ablation-row">
-        <div class="model-name">+ VAE Scale-Consistency</div>
-        <div class="metric">39.50</div>
-        <div class="metric">34.10</div>
-        <div class="metric">6.05</div>
-        <div class="metric">0.78</div>
-      </div>
-      <div class="ablation-row">
-        <div class="model-name">+ Wavelet Masking</div>
-        <div class="metric">39.20</div>
-        <div class="metric">34.50</div>
-        <div class="metric">6.10</div>
-        <div class="metric">0.75</div>
-      </div>
-      <div class="ablation-row ours-row">
-        <div class="model-name">Full LWD (Ours) ★</div>
-        <div class="metric best">38.74</div>
-        <div class="metric best">34.94</div>
-        <div class="metric best">6.17</div>
-        <div class="metric">0.74</div>
-      </div>
-    </div>
-
-    <!-- VAE ablation -->
-    <div style="margin-top:48px;">
-      <h3 style="margin-bottom:12px;">Scale-Consistency on VAE Reconstruction</h3>
-      <p>The SC-VAE also improves reconstruction metrics directly. Flux-VAE-SC achieves the best rFID (0.50) and PSNR (28.14) among all tested VAEs.</p>
-      <div class="table-wrap" style="margin-top:16px;">
-        <table>
-          <thead>
-            <tr><th>VAE Model</th><th>rFID ↓</th><th>NMSE ↓</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>SD3-VAE</td><td>1.05</td><td>0.01</td><td class="best">26.54</td><td class="best">0.86</td><td class="best">0.08</td></tr>
-            <tr><td>SD3-VAE-F16</td><td>0.70</td><td>0.07</td><td>19.82</td><td>0.63</td><td>0.30</td></tr>
-            <tr class="highlight"><td>SD3-VAE-F16-SC</td><td>0.70</td><td class="best">0.04</td><td>22.58</td><td>0.75</td><td>0.18</td></tr>
-            <tr><td>Flux-VAE</td><td>0.73</td><td>0.01</td><td>27.18</td><td>0.89</td><td>0.07</td></tr>
-            <tr class="highlight"><td>Flux-VAE-SC</td><td class="best">0.50</td><td>0.01</td><td class="best">28.14</td><td class="best">0.90</td><td class="best">0.06</td></tr>
-            <tr><td>Sana-AE</td><td>0.74</td><td>0.04</td><td>22.16</td><td>0.70</td><td class="best">0.159</td></tr>
-            <tr class="highlight"><td>Sana-AE-SC</td><td class="best">0.55</td><td class="best">0.02</td><td class="best">23.64</td><td class="best">0.73</td><td>0.163</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
@@ -902,6 +1076,7 @@ url={https://openreview.net/forum?id=5og80LMVxG}
 function showTable(res, btn) {
   document.getElementById('table-2k').style.display = res==='2k' ? 'block' : 'none';
   document.getElementById('table-4k').style.display = res==='4k' ? 'block' : 'none';
+  document.getElementById('table-laion').style.display = res==='laion' ? 'block' : 'none';
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -928,6 +1103,83 @@ function initComparisons() {
   });
 }
 
+function initModelViewer() {
+  const viewer = document.querySelector('[data-model-viewer]');
+  if (!viewer) return;
+
+  const panels = Array.from(viewer.querySelectorAll('.compare-model-panel'));
+  const slider = viewer.querySelector('.model-slider');
+  const currentLabel = viewer.querySelector('[data-model-name]');
+  const prevBtn = viewer.querySelector('.model-nav[data-dir="-1"]');
+  const nextBtn = viewer.querySelector('.model-nav[data-dir="1"]');
+  if (!panels.length || !slider) return;
+
+  const maxIndex = panels.length - 1;
+  slider.max = String(maxIndex);
+
+  const show = (index) => {
+    const clamped = Math.max(0, Math.min(maxIndex, index));
+    panels.forEach((panel, i) => panel.classList.toggle('active', i === clamped));
+    const modelName = panels[clamped].getAttribute('data-model-name') || `Model ${clamped + 1}`;
+    if (currentLabel) currentLabel.textContent = modelName;
+    slider.value = String(clamped);
+    if (prevBtn) prevBtn.disabled = clamped === 0;
+    if (nextBtn) nextBtn.disabled = clamped === maxIndex;
+  };
+
+  slider.addEventListener('input', () => show(Number(slider.value)));
+  viewer.querySelectorAll('.model-nav').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const dir = Number(btn.getAttribute('data-dir') || 0);
+      show(Number(slider.value) + dir);
+    });
+  });
+
+  show(Number(slider.value));
+}
+
+function initTheme() {
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  const stored = localStorage.getItem('lwd-theme');
+  const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  const initial = stored || (prefersLight ? 'light' : 'dark');
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    const isLight = theme === 'light';
+    toggle.textContent = isLight ? '☀️' : '🌙';
+    toggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+    toggle.setAttribute('title', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+    if (themeMeta) themeMeta.setAttribute('content', isLight ? '#f4f7fb' : '#0b0d12');
+  }
+
+  applyTheme(initial);
+
+  toggle.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    localStorage.setItem('lwd-theme', next);
+    applyTheme(next);
+  });
+}
+
+function initMathRendering() {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '\\[', right: '\\]', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false }
+      ],
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      throwOnError: false
+    });
+  }
+}
+
 // Simple scroll-reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
@@ -945,7 +1197,12 @@ document.querySelectorAll('.step, .highlight-card, .comp-card, .ablation-row:not
   observer.observe(el);
 });
 
-initComparisons();
+document.addEventListener('DOMContentLoaded', () => {
+  initComparisons();
+  initModelViewer();
+  initMathRendering();
+  initTheme();
+});
 </script>
 </body>
 </html>
