@@ -179,6 +179,12 @@
     color: var(--muted); font-size:.75rem; font-family:'JetBrains Mono',monospace;
     text-align:center; padding:12px;
   }
+  .teaser-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
 
@@ -253,6 +259,16 @@
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
     padding:32px; margin-top:40px; text-align:center;
   }
+  .arch-image {
+    width: 100%;
+    max-width: 1100px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+  }
   .arch-flow {
     display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0;
     font-size:.82rem; font-family:'JetBrains Mono',monospace;
@@ -284,6 +300,117 @@
   tr.highlight td:first-child { color:var(--accent2); }
   td.best { color:var(--accent3) !important; font-weight:700; }
   .table-wrap { overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border); }
+
+  /* ── IMAGE COMPARE ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 22px;
+  }
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .compare-title {
+    font-size: .82rem;
+    color: var(--muted);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .image-compare {
+    --split: 50%;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    user-select: none;
+    touch-action: pan-y;
+  }
+  .image-compare img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  .image-compare .after-wrap {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    clip-path: inset(0 calc(100% - var(--split)) 0 0);
+  }
+  .image-compare .after-wrap img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .image-compare .divider {
+    position: absolute;
+    top: 0;
+    left: var(--split);
+    width: 2px;
+    height: 100%;
+    background: rgba(255,255,255,.8);
+    transform: translateX(-1px);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.18);
+    pointer-events: none;
+  }
+  .image-compare .handle {
+    position: absolute;
+    top: 50%;
+    left: var(--split);
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 56px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.95);
+    border: 1px solid rgba(0,0,0,.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #111;
+    pointer-events: none;
+  }
+  .image-compare .labels {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .image-compare .label {
+    background: rgba(0,0,0,.55);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #fff;
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-size: .72rem;
+    letter-spacing: .03em;
+  }
+  .image-compare .slider-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+  }
 
   /* ── COMPARISON ── */
   .comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:24px; }
@@ -346,6 +473,7 @@
     .nav-links a { font-size:.78rem; }
     .teaser-grid { grid-template-columns:1fr 1fr; }
     .comparison-grid { grid-template-columns:1fr; }
+    .compare-grid { grid-template-columns:1fr; }
     .ablation-row { grid-template-columns:1fr 1fr; font-size:.8rem; }
   }
 </style>
@@ -366,57 +494,28 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-badge"><span></span>ICLR 2025</div>
+  <div class="hero-badge"><span></span>ICLR 2026</div>
   <h1 class="title">Latent <em>Wavelet</em><br/>Diffusion</h1>
   <p class="subtitle">For Ultra-High-Resolution Image Synthesis</p>
   <p class="authors">
-    <a href="#">Luigi Sigillo</a> &thinsp;&middot;&thinsp;
-    <a href="#">Shengfeng He</a> &thinsp;&middot;&thinsp;
-    <a href="#">Danilo Comminiello</a>
+    <a href="https://luigisigillo.github.io">Luigi Sigillo <sup>1,2,3</sup></a> &thinsp;&middot;&thinsp;
+    <a href="https://scholar.google.com/citations?user=1234567890">Shengfeng He <sup>2</sup></a> &thinsp;&middot;&thinsp;
+    <a href="https://scholar.google.com/citations?user=0987654321">Danilo Comminiello <sup>1</sup></a>
   </p>
-  <p class="affiliations">Sapienza University of Rome &nbsp;&middot;&nbsp; Singapore Management University</p>
+  <p class="affiliations"><sup>1</sup>Sapienza University of Rome &nbsp;&middot;&nbsp; <sup>2</sup>Singapore Management University &nbsp;&middot;&nbsp; <sup>3</sup>EMBL</p>
   <div class="buttons">
     <a href="https://openreview.net/forum?id=5og80LMVxG" class="btn btn-primary" target="_blank">
       📄 Paper
     </a>
-    <a href="#" class="btn btn-outline">💻 Code (coming soon)</a>
+    <a href="https://github.com/LuigiSigillo/LatentWaveletDiffusion" class="btn btn-outline">💻 Code</a>
     <a href="#results" class="btn btn-outline">📊 Results</a>
   </div>
 
-  <!-- teaser image grid (placeholder slots) -->
-  <div class="teaser-grid">
-    <div class="teaser-card tall" style="aspect-ratio:auto;min-height:240px;">
-      <div class="placeholder-img" style="background:linear-gradient(160deg,#1a1040 0%,#2d1b69 100%);">
-        <div>
-          <div style="font-size:2.5rem;margin-bottom:8px;">🐱</div>
-          <div>4096 × 4096<br/>UHR Sample</div>
-        </div>
-      </div>
-      <div class="teaser-label">4K</div>
-    </div>
-    <div class="teaser-card">
-      <div class="placeholder-img" style="background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 100%);">
-        <div>🚗<br/><span>2160×4096</span></div>
-      </div>
-      <div class="teaser-label">2K</div>
-    </div>
-    <div class="teaser-card">
-      <div class="placeholder-img" style="background:linear-gradient(160deg,#1a1a2e 0%,#16213e 100%);">
-        <div>🍍<br/><span>4096×4096</span></div>
-      </div>
-      <div class="teaser-label">4K</div>
-    </div>
-    <div class="teaser-card">
-      <div class="placeholder-img" style="background:linear-gradient(160deg,#2d0a3e 0%,#4a1572 100%);">
-        <div>👤<br/><span>2048×2048</span></div>
-      </div>
-      <div class="teaser-label">2K</div>
-    </div>
-    <div class="teaser-card">
-      <div class="placeholder-img" style="background:linear-gradient(160deg,#0d1b2a 0%,#1b3a5e 100%);">
-        <div>🌌<br/><span>3048×2048</span></div>
-      </div>
-      <div class="teaser-label">3K</div>
+  <!-- teaser image -->
+  <div class="teaser-grid" style="grid-template-columns: 1fr; max-width: 1100px;">
+    <div class="teaser-card" style="aspect-ratio: 16/9;">
+      <img src="assets/images/teaser/firstpage.png" alt="Latent Wavelet Diffusion first-page teaser" class="teaser-image" />
+      <div class="teaser-label">Paper Teaser</div>
     </div>
   </div>
 </section>
@@ -429,10 +528,7 @@
 
     <div class="abstract-box">
       <p>
-        Scaling diffusion models to 2K, 4K, and beyond is not a simple engineering problem. Training directly at ultra-high resolution is computationally prohibitive, and naïve upscaling fails catastrophically — producing <strong>spectral collapse</strong> (blurry, over-smoothed textures), <strong>repetitive tiling patterns</strong>, and <strong>spatial inconsistencies</strong>. At the root of these failures lies a single, overlooked flaw: <strong>uniform supervision</strong>.
-      </p>
-      <p style="margin-bottom:0;">
-        We introduce <strong>Latent Wavelet Diffusion (LWD)</strong> — a training-only framework that uses the Discrete Wavelet Transform to identify high-frequency salient regions and adaptively focuses the loss on detail-rich areas. Combined with a Spectrally-Aware VAE fine-tuned with a scale-consistency loss, LWD achieves state-of-the-art UHR synthesis with <strong>zero inference overhead</strong> and <strong>no architectural changes</strong>.
+High-resolution image synthesis remains a core challenge in generative modeling, particularly in balancing computational efficiency with the preservation of fine-grained visual detail. We present Latent Wavelet Diffusion (LWD), a lightweight training framework that significantly improves detail and texture fidelity in ultra-high-resolution (2K-4K) image synthesis. LWD introduces a novel, frequency-aware masking strategy derived from wavelet energy maps, which dynamically focuses the training process on detail-rich regions of the latent space. This is complemented by a scale-consistent VAE objective to ensure high spectral fidelity. The primary advantage of our approach is its efficiency: LWD requires no architectural modifications and adds zero additional cost during inference, making it a practical solution for scaling existing models. Across multiple strong baselines, LWD consistently improves perceptual quality and FID scores, demonstrating the power of signal-driven supervision as a principled and efficient path toward high-resolution generative modeling.
       </p>
     </div>
 
@@ -468,24 +564,10 @@
     <h2>The LWD Framework</h2>
     <p>LWD is built on three tightly integrated stages that work together to solve the uniform-supervision bottleneck at ultra-high resolution.</p>
 
-    <!-- Architecture flow -->
+    <!-- Architecture diagram -->
     <div class="arch-diagram">
       <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px;letter-spacing:.1em;text-transform:uppercase;">Complete Architecture Flow</div>
-      <div class="arch-flow">
-        <div class="arch-box">Image x</div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-box accent">SA-VAE<br/><span style="font-size:.7rem;color:var(--muted)">Scale-Consistency</span></div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-box">Latent z<sub>t</sub></div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-box blue">1-Level DWT<br/><span style="font-size:.7rem;color:var(--muted)">Haar Wavelet</span></div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-box">A<sub>wavelet</sub><br/><span style="font-size:.7rem;color:var(--muted)">Saliency Map</span></div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-box accent">Mask M<sub>t</sub><br/><span style="font-size:.7rem;color:var(--muted)">Time-adaptive</span></div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-box blue">ℒ<sub>masked</sub></div>
-      </div>
+      <img src="assets/images/method/arch.drawio.png" alt="Latent Wavelet Diffusion architecture diagram" class="arch-image" />
     </div>
 
     <div class="method-steps" style="margin-top:48px;">
@@ -595,6 +677,83 @@
           <tr class="highlight"><td>LWD + Sana-1.6B</td><td>—</td><td class="best">34.59</td><td class="best">6.21</td><td class="best">0.60</td><td class="best">32.62</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <div style="margin-top:44px;">
+      <h3 style="margin-bottom:10px;">Interactive Visual Comparison</h3>
+      <p>Drag the slider on each panel to compare baseline output against LWD-enhanced output. You can replace the image paths with your own qualitative examples anytime.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <div class="compare-title">PixArt-Sigma-XL · Sample A</div>
+          <div class="image-compare" data-start="52">
+            <img src="assets/images/comparison/0_lwd_pixart.png" alt="PixArt-Sigma-XL baseline example A" />
+            <div class="after-wrap">
+              <img src="assets/images/comparison/0_pixart.png" alt="PixArt-Sigma-XL +LWD example A" />
+            </div>
+            <div class="divider"></div>
+            <div class="handle">◀▶</div>
+            <div class="labels">
+              <span class="label">PixArt-Sigma-XL</span>
+              <span class="label">+LWD</span>
+            </div>
+            <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="Image comparison slider A" />
+          </div>
+        </div>
+
+        <div class="compare-card">
+          <div class="compare-title">PixArt-Sigma-XL · Sample B</div>
+          <div class="image-compare" data-start="60">
+            <img src="assets/images/comparison/1_lwd_pixart.png" alt="PixArt-Sigma-XL baseline example B" />
+            <div class="after-wrap">
+              <img src="assets/images/comparison/1_pixart.png" alt="PixArt-Sigma-XL +LWD example B" />
+            </div>
+            <div class="divider"></div>
+            <div class="handle">◀▶</div>
+            <div class="labels">
+              <span class="label">PixArt-Sigma-XL</span>
+              <span class="label">+LWD</span>
+            </div>
+            <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="Image comparison slider B" />
+          </div>
+        </div>
+      </div>
+    </div>
+<div class="compare-grid">
+        <div class="compare-card">
+          <div class="compare-title">SD3-Diff4k-F16 · Sample A</div>
+          <div class="image-compare" data-start="52">
+            <img src="assets/images/comparison/2_lwd_sd3.png" alt="SD3-Diff4k-F16 baseline example A" />
+            <div class="after-wrap">
+              <img src="assets/images/comparison/2_sd3.png" alt="SD3-Diff4k-F16 +LWD example A" />
+            </div>
+            <div class="divider"></div>
+            <div class="handle">◀▶</div>
+            <div class="labels">
+              <span class="label">SD3-Diff4k-F16</span>
+              <span class="label">+LWD</span>
+            </div>
+            <input class="slider-input" type="range" min="0" max="100" value="52" aria-label="Image comparison slider A" />
+          </div>
+        </div>
+
+        <div class="compare-card">
+          <div class="compare-title">SD3-Diff4k-F16 · Sample B</div>
+          <div class="image-compare" data-start="60">
+            <img src="assets/images/comparison/3_lwd_sd3.png" alt="SD3-Diff4k-F16 baseline example B" />
+            <div class="after-wrap">
+              <img src="assets/images/comparison/3_sd3.png" alt="SD3-Diff4k-F16 +LWD example B" />
+            </div>
+            <div class="divider"></div>
+            <div class="handle">◀▶</div>
+            <div class="labels">
+              <span class="label">SD3-Diff4k-F16</span>
+              <span class="label">+LWD</span>
+            </div>
+            <input class="slider-input" type="range" min="0" max="100" value="60" aria-label="Image comparison slider B" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- HLFR -->
@@ -724,19 +883,19 @@
     <p>If you find LWD useful for your research, please consider citing our paper.</p>
     <div class="cite-box">
       <button class="copy-btn" onclick="copyBib()">Copy</button>
-      <pre id="bib-text"><span class="key">@inproceedings</span>{sigillo2025lwd,
-  title     = {Latent Wavelet Diffusion For Ultra-High-Resolution Image Synthesis},
-  author    = {Luigi Sigillo and Shengfeng He and Danilo Comminiello},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  year      = {2025},
-  url       = {https://openreview.net/forum?id=5og80LMVxG}
+      <pre id="bib-text"><span class="key">@inproceedings</span>{sigillo2026latent,
+title={Latent Wavelet Diffusion For Ultra High-Resolution Image Synthesis},
+author={Luigi Sigillo and Shengfeng He and Danilo Comminiello},
+booktitle={The Fourteenth International Conference on Learning Representations},
+year={2026},
+url={https://openreview.net/forum?id=5og80LMVxG}
 }</pre>
     </div>
   </div>
 </section>
 
 <footer>
-  <p>Latent Wavelet Diffusion &nbsp;·&nbsp; ICLR 2025 &nbsp;·&nbsp; Luigi Sigillo, Shengfeng He, Danilo Comminiello</p>
+  <p>Latent Wavelet Diffusion &nbsp;·&nbsp; ICLR 2026 &nbsp;·&nbsp; Luigi Sigillo, Shengfeng He, Danilo Comminiello</p>
 </footer>
 
 <script>
@@ -756,6 +915,19 @@ function copyBib() {
   });
 }
 
+function initComparisons() {
+  document.querySelectorAll('.image-compare').forEach((root) => {
+    const input = root.querySelector('.slider-input');
+    const update = () => {
+      const v = Math.min(100, Math.max(0, Number(input.value || 50)));
+      root.style.setProperty('--split', v + '%');
+    };
+    input.addEventListener('input', update);
+    input.addEventListener('change', update);
+    update();
+  });
+}
+
 // Simple scroll-reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
@@ -772,6 +944,8 @@ document.querySelectorAll('.step, .highlight-card, .comp-card, .ablation-row:not
   el.style.transition = 'opacity .5s ease, transform .5s ease';
   observer.observe(el);
 });
+
+initComparisons();
 </script>
 </body>
 </html>
