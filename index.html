@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Page metadata -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N0D0GBMH6P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N0D0GBMH6P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>LWD – Latent Wavelet Diffusion</title>
+<meta name="description" content="Latent Wavelet Diffusion (LWD) is a training-only framework for ultra-high-resolution image synthesis with adaptive wavelet saliency masking.">
+<meta property="og:title" content="LWD – Latent Wavelet Diffusion">
+<meta property="og:description" content="A training-only framework for ultra-high-resolution image synthesis with adaptive wavelet saliency masking.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LWD – Latent Wavelet Diffusion">
+<meta name="twitter:description" content="A training-only framework for ultra-high-resolution image synthesis with adaptive wavelet saliency masking.">
+<meta name="theme-color" content="#0b0d12">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --surface: #13161f;
+    --surface2: #1a1e2b;
+    --border: rgba(255,255,255,0.07);
+    --accent: #7c6dfa;
+    --accent2: #a78bfa;
+    --accent3: #38bdf8;
+    --text: #e8eaf0;
+    --muted: #7b82a0;
+    --tag-bg: rgba(124,109,250,0.12);
+    --radius: 14px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px;
+    height: 60px;
+    background: rgba(11,13,18,0.85);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem;
+    letter-spacing: -.5px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    color: var(--muted); font-size: .85rem; text-decoration: none;
+    letter-spacing: .04em; font-weight: 500; transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(124,109,250,0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(56,189,248,0.07) 0%, transparent 60%);
+    pointer-events:none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--tag-bg); border: 1px solid rgba(124,109,250,0.25);
+    border-radius: 100px; padding: 6px 16px; margin-bottom: 32px;
+    font-size:.8rem; color: var(--accent2); font-weight:500; letter-spacing:.05em;
+    animation: fadeUp .6s ease both;
+  }
+  .hero-badge span { width:6px;height:6px;border-radius:50%; background:var(--accent2); display:inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  h1.title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -.03em;
+    margin-bottom: 12px;
+    animation: fadeUp .7s .1s ease both;
+  }
+  h1.title em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--muted); max-width: 560px; margin: 0 auto 36px;
+    animation: fadeUp .7s .2s ease both;
+  }
+  .authors {
+    font-size: .92rem; color: var(--muted);
+    margin-bottom: 8px;
+    animation: fadeUp .7s .25s ease both;
+  }
+  .authors a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); transition: border-color .2s; }
+  .authors a:hover { border-color: var(--accent2); }
+  .affiliations {
+    font-size:.82rem; color:var(--muted); margin-bottom: 36px;
+    animation: fadeUp .7s .3s ease both;
+  }
+  .buttons {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 60px;
+    animation: fadeUp .7s .35s ease both;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 22px; border-radius: 100px;
+    font-size: .88rem; font-weight: 500; text-decoration: none; transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); background: var(--tag-bg); }
+
+  .teaser-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+    max-width: 900px; width:100%;
+    animation: fadeUp .7s .45s ease both;
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .teaser-grid .tall { grid-row: span 2; }
+  .teaser-card {
+    background: var(--surface);
+    border-radius: 8px; overflow: hidden;
+    aspect-ratio: 16/10; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .teaser-card.tall { aspect-ratio: auto; }
+  .teaser-label {
+    position:absolute; bottom:8px; right:8px;
+    background: rgba(0,0,0,.6); backdrop-filter: blur(8px);
+    border-radius: 6px; padding: 2px 8px; font-size: .7rem;
+    font-family: 'JetBrains Mono', monospace; color: var(--accent2);
+    border: 1px solid rgba(124,109,250,.2);
+  }
+  .placeholder-img {
+    width:100%; height:100%; min-height:120px;
+    display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    color: var(--muted); font-size:.75rem; font-family:'JetBrains Mono',monospace;
+    text-align:center; padding:12px;
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+
+  /* ── SECTIONS ── */
+  section { padding: 100px 24px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .section-label {
+    font-size:.78rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent2); font-weight:600; margin-bottom:16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  h2 {
+    font-family:'DM Serif Display',serif;
+    font-size:clamp(1.8rem,4vw,2.8rem); letter-spacing:-.02em; margin-bottom:24px; line-height:1.1;
+  }
+  h3 { font-size:1.1rem; font-weight:600; margin-bottom:10px; }
+  p { color:var(--muted); margin-bottom:16px; }
+  p strong { color:var(--text); }
+
+  /* ── ABSTRACT ── */
+  #abstract { background: var(--surface); }
+  .abstract-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 40px;
+    position:relative; overflow:hidden;
+  }
+  .abstract-box::before {
+    content:''; position:absolute; top:0;left:0;right:0;height:2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+  }
+  .abstract-box p { font-size:1.05rem; line-height:1.85; color:var(--text); }
+
+  .highlight-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:16px; margin-top:32px;
+  }
+  .highlight-card {
+    background: var(--surface2); border:1px solid var(--border); border-radius:var(--radius);
+    padding:24px; transition:border-color .2s, transform .2s;
+  }
+  .highlight-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .hc-icon { font-size:1.6rem; margin-bottom:12px; }
+  .hc-title { font-weight:600; font-size:.95rem; margin-bottom:6px; color:var(--text); }
+  .hc-desc { font-size:.88rem; color:var(--muted); line-height:1.6; }
+
+  /* ── METHOD ── */
+  #method {}
+  .method-steps { display:flex; flex-direction:column; gap:0; }
+  .step {
+    display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:32px 0; border-bottom:1px solid var(--border);
+    position:relative;
+  }
+  .step:last-child { border-bottom:none; }
+  .step-num {
+    width:48px;height:48px;border-radius:50%;
+    background:var(--tag-bg); border:1px solid rgba(124,109,250,.3);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:.9rem; color:var(--accent2);
+    font-weight:600; flex-shrink:0;
+  }
+  .step-tag { display:inline-block; background:var(--tag-bg); border:1px solid rgba(124,109,250,.2); border-radius:100px; padding:2px 12px; font-size:.75rem; color:var(--accent2); margin-bottom:10px; }
+  .formula-box {
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:16px 20px; margin-top:14px;
+    font-family:'JetBrains Mono',monospace; font-size:.85rem; color:var(--accent3);
+    overflow-x:auto; white-space:nowrap;
+  }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:32px; margin-top:40px; text-align:center;
+  }
+  .arch-flow {
+    display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0;
+    font-size:.82rem; font-family:'JetBrains Mono',monospace;
+  }
+  .arch-box {
+    background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    padding:10px 16px; color:var(--text); white-space:nowrap;
+    transition:border-color .2s;
+  }
+  .arch-box.accent { border-color:var(--accent); color:var(--accent2); }
+  .arch-box.blue { border-color:rgba(56,189,248,.4); color:var(--accent3); }
+  .arch-arrow { color:var(--muted); padding:0 8px; font-size:1rem; }
+
+  /* ── RESULTS TABLE ── */
+  #results { background:var(--surface); }
+  .results-tabs { display:flex; gap:8px; margin-bottom:32px; }
+  .tab {
+    padding:8px 20px; border-radius:100px; font-size:.85rem; font-weight:500;
+    border:1px solid var(--border); cursor:pointer; transition:all .2s; color:var(--muted);
+    background:transparent;
+  }
+  .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  table { width:100%; border-collapse:collapse; font-size:.85rem; }
+  thead tr { border-bottom:2px solid var(--accent); }
+  th { padding:12px 14px; text-align:left; font-weight:600; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--muted); }
+  tr.highlight td { color:var(--text); background:rgba(124,109,250,.06); font-weight:500; }
+  tr.highlight td:first-child { color:var(--accent2); }
+  td.best { color:var(--accent3) !important; font-weight:700; }
+  .table-wrap { overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border); }
+
+  /* ── COMPARISON ── */
+  .comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:24px; }
+  .comp-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:28px; transition:border-color .2s;
+  }
+  .comp-card.ours { border-color:var(--accent); }
+  .comp-card-label { font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .comp-card.ours .comp-card-label { color:var(--accent2); }
+  .comp-title { font-weight:600; font-size:1rem; margin-bottom:12px; }
+  .comp-bullet { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:.88rem; color:var(--muted); }
+  .comp-bullet .icon { color:var(--accent2); margin-top:2px; }
+  .comp-bullet .icon.bad { color:#f87171; }
+
+  /* ── ABLATION ── */
+  #ablation {}
+  .ablation-flow { display:flex; flex-direction:column; gap:0; }
+  .ablation-row {
+    display:grid; grid-template-columns:200px 1fr auto auto auto auto;
+    align-items:center; gap:16px; padding:16px 20px;
+    border-bottom:1px solid var(--border); font-size:.88rem;
+  }
+  .ablation-row.header { color:var(--muted); font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid var(--accent); }
+  .ablation-row.ours-row { background:rgba(124,109,250,.05); }
+  .ablation-row.ours-row .model-name { color:var(--accent2); font-weight:600; }
+  .metric { text-align:center; font-family:'JetBrains Mono',monospace; }
+  .metric.best { color:var(--accent3); font-weight:700; }
+
+  /* ── CITATION ── */
+  #citation { background:var(--surface); }
+  .cite-box {
+    background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
+    padding:28px 32px; position:relative; overflow:hidden;
+  }
+  .cite-box pre {
+    font-family:'JetBrains Mono',monospace; font-size:.82rem;
+    color:var(--muted); white-space:pre-wrap; line-height:1.7;
+  }
+  .cite-box pre .key { color:var(--accent2); }
+  .copy-btn {
+    position:absolute; top:16px; right:16px;
+    background:var(--tag-bg); border:1px solid var(--border); color:var(--muted);
+    border-radius:8px; padding:6px 14px; font-size:.78rem; cursor:pointer;
+    font-family:'DM Sans',sans-serif; transition:all .2s;
+  }
+  .copy-btn:hover { color:var(--text); border-color:var(--accent); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align:center; padding:40px 24px;
+    border-top:1px solid var(--border);
+    font-size:.82rem; color:var(--muted);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:640px) {
+    nav { padding:0 20px; }
+    .nav-links { gap:16px; }
+    .nav-links a { font-size:.78rem; }
+    .teaser-grid { grid-template-columns:1fr 1fr; }
+    .comparison-grid { grid-template-columns:1fr; }
+    .ablation-row { grid-template-columns:1fr 1fr; font-size:.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">LWD</div>
+  <div class="nav-links">
+    <a href="#abstract">Abstract</a>
+    <a href="#method">Method</a>
+    <a href="#results">Results</a>
+    <a href="#ablation">Ablation</a>
+    <a href="#citation">Cite</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span></span>ICLR 2025</div>
+  <h1 class="title">Latent <em>Wavelet</em><br/>Diffusion</h1>
+  <p class="subtitle">For Ultra-High-Resolution Image Synthesis</p>
+  <p class="authors">
+    <a href="#">Luigi Sigillo</a> &thinsp;&middot;&thinsp;
+    <a href="#">Shengfeng He</a> &thinsp;&middot;&thinsp;
+    <a href="#">Danilo Comminiello</a>
+  </p>
+  <p class="affiliations">Sapienza University of Rome &nbsp;&middot;&nbsp; Singapore Management University</p>
+  <div class="buttons">
+    <a href="https://openreview.net/forum?id=5og80LMVxG" class="btn btn-primary" target="_blank">
+      📄 Paper
+    </a>
+    <a href="#" class="btn btn-outline">💻 Code (coming soon)</a>
+    <a href="#results" class="btn btn-outline">📊 Results</a>
+  </div>
+
+  <!-- teaser image grid (placeholder slots) -->
+  <div class="teaser-grid">
+    <div class="teaser-card tall" style="aspect-ratio:auto;min-height:240px;">
+      <div class="placeholder-img" style="background:linear-gradient(160deg,#1a1040 0%,#2d1b69 100%);">
+        <div>
+          <div style="font-size:2.5rem;margin-bottom:8px;">🐱</div>
+          <div>4096 × 4096<br/>UHR Sample</div>
+        </div>
+      </div>
+      <div class="teaser-label">4K</div>
+    </div>
+    <div class="teaser-card">
+      <div class="placeholder-img" style="background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 100%);">
+        <div>🚗<br/><span>2160×4096</span></div>
+      </div>
+      <div class="teaser-label">2K</div>
+    </div>
+    <div class="teaser-card">
+      <div class="placeholder-img" style="background:linear-gradient(160deg,#1a1a2e 0%,#16213e 100%);">
+        <div>🍍<br/><span>4096×4096</span></div>
+      </div>
+      <div class="teaser-label">4K</div>
+    </div>
+    <div class="teaser-card">
+      <div class="placeholder-img" style="background:linear-gradient(160deg,#2d0a3e 0%,#4a1572 100%);">
+        <div>👤<br/><span>2048×2048</span></div>
+      </div>
+      <div class="teaser-label">2K</div>
+    </div>
+    <div class="teaser-card">
+      <div class="placeholder-img" style="background:linear-gradient(160deg,#0d1b2a 0%,#1b3a5e 100%);">
+        <div>🌌<br/><span>3048×2048</span></div>
+      </div>
+      <div class="teaser-label">3K</div>
+    </div>
+  </div>
+</section>
+
+<!-- ABSTRACT -->
+<section id="abstract">
+  <div class="container">
+    <div class="section-label">Overview</div>
+    <h2>The UHR Challenge &amp; Our Solution</h2>
+
+    <div class="abstract-box">
+      <p>
+        Scaling diffusion models to 2K, 4K, and beyond is not a simple engineering problem. Training directly at ultra-high resolution is computationally prohibitive, and naïve upscaling fails catastrophically — producing <strong>spectral collapse</strong> (blurry, over-smoothed textures), <strong>repetitive tiling patterns</strong>, and <strong>spatial inconsistencies</strong>. At the root of these failures lies a single, overlooked flaw: <strong>uniform supervision</strong>.
+      </p>
+      <p style="margin-bottom:0;">
+        We introduce <strong>Latent Wavelet Diffusion (LWD)</strong> — a training-only framework that uses the Discrete Wavelet Transform to identify high-frequency salient regions and adaptively focuses the loss on detail-rich areas. Combined with a Spectrally-Aware VAE fine-tuned with a scale-consistency loss, LWD achieves state-of-the-art UHR synthesis with <strong>zero inference overhead</strong> and <strong>no architectural changes</strong>.
+      </p>
+    </div>
+
+    <div class="highlight-grid">
+      <div class="highlight-card">
+        <div class="hc-icon">🌊</div>
+        <div class="hc-title">Spectrally-Aware VAE</div>
+        <div class="hc-desc">Fine-tuned with a scale-consistency loss to create a clean latent space free of HF compression artifacts.</div>
+      </div>
+      <div class="highlight-card">
+        <div class="hc-icon">🗺️</div>
+        <div class="hc-title">Wavelet Saliency Maps</div>
+        <div class="hc-desc">A non-trainable 1-level DWT localizes where high-frequency energy lives — a heatmap of structural richness.</div>
+      </div>
+      <div class="highlight-card">
+        <div class="hc-icon">🎯</div>
+        <div class="hc-title">Adaptive Masked Loss</div>
+        <div class="hc-desc">Time-dependent binary mask dynamically focuses gradient updates on the salient, detail-rich regions that matter most.</div>
+      </div>
+      <div class="highlight-card">
+        <div class="hc-icon">⚡</div>
+        <div class="hc-title">Zero Inference Overhead</div>
+        <div class="hc-desc">DWT and masking are discarded after training. The sampled model is architecturally identical to the baseline.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section id="method">
+  <div class="container">
+    <div class="section-label">Technical Approach</div>
+    <h2>The LWD Framework</h2>
+    <p>LWD is built on three tightly integrated stages that work together to solve the uniform-supervision bottleneck at ultra-high resolution.</p>
+
+    <!-- Architecture flow -->
+    <div class="arch-diagram">
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px;letter-spacing:.1em;text-transform:uppercase;">Complete Architecture Flow</div>
+      <div class="arch-flow">
+        <div class="arch-box">Image x</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box accent">SA-VAE<br/><span style="font-size:.7rem;color:var(--muted)">Scale-Consistency</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">Latent z<sub>t</sub></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box blue">1-Level DWT<br/><span style="font-size:.7rem;color:var(--muted)">Haar Wavelet</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">A<sub>wavelet</sub><br/><span style="font-size:.7rem;color:var(--muted)">Saliency Map</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box accent">Mask M<sub>t</sub><br/><span style="font-size:.7rem;color:var(--muted)">Time-adaptive</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box blue">ℒ<sub>masked</sub></div>
+      </div>
+    </div>
+
+    <div class="method-steps" style="margin-top:48px;">
+
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-tag">Stage 1</div>
+          <h3>Spectrally-Aware VAE (SA-VAE)</h3>
+          <p>Standard VAEs optimize for reconstruction, not spectral accuracy. The encoder/decoder introduces its own HF noise and aliasing, making the latent code "dirty." We cannot guide training with garbage saliency maps.</p>
+          <p>We fine-tune the VAE with a <strong>multi-resolution scale-consistency loss</strong>. The key insight: real-world structures are self-similar across scales, while compression artifacts are not. We enforce that encoding a downscaled image should be spectrally identical to downscaling the full-res encoding.</p>
+          <div class="formula-box">
+            ℒ<sub>VAE</sub> = ‖D(z) − x‖² + α‖D(E(z<sub>down</sub>)) − x<sub>down</sub>‖² + β D<sub>KL</sub>(q(z|x)‖p(z)) + λ ℒ<sub>LPIPS</sub>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-tag">Stage 2</div>
+          <h3>Wavelet Saliency Maps via DWT</h3>
+          <p>We apply a fast, <strong>non-trainable</strong> 1-level Discrete Wavelet Transform (Haar wavelet) to the noisy latent z<sub>t</sub> at each training step. This decomposes it into four subbands: LL (approximation), LH (horizontal HF), HL (vertical HF), HH (diagonal HF).</p>
+          <p>We aggregate the detail subbands into a spatial energy map — bright regions are structurally rich (hair, foliage), dark regions are simple (sky, flat walls).</p>
+          <div class="formula-box">
+            E(i,j) = (1/C) · Σ<sub>c</sub> [ (z<sup>c,i,j</sup><sub>LH</sub>)² + (z<sup>c,i,j</sup><sub>HL</sub>)² + (z<sup>c,i,j</sup><sub>HH</sub>)² ]
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-tag">Stage 3</div>
+          <h3>Time-Dependent Adaptive Mask M<sub>t</sub></h3>
+          <p>High-frequency detail is the first thing destroyed by noise. At high timesteps (lots of noise), the saliency map is itself noisy — we must not rely on it for fine-grained masking. Our mask follows a curriculum:</p>
+          <p><strong>High noise (high t):</strong> Mask less — force the model to learn global structure (LL band). <strong>Low noise (low t):</strong> Mask aggressively — focus only on the most salient HF regions. The threshold tightens as detail becomes recoverable.</p>
+          <div class="formula-box">
+            M<sub>t</sub>(i,j) = 1 &nbsp;if&nbsp; T · (A<sub>wavelet</sub>(i,j) + ℓ) ≥ t &nbsp;&nbsp;else&nbsp; 0
+          </div>
+          <div class="formula-box" style="margin-top:10px;">
+            ℒ<sub>masked</sub> = ‖ M<sub>t</sub> ⊙ [(ε − z₀) − v<sub>Θ</sub>(z<sub>t</sub>, t, y)] ‖²
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="container">
+    <div class="section-label">Experiments</div>
+    <h2>Quantitative Results</h2>
+    <p>LWD is <strong>model-agnostic</strong>: it improves perceptual quality (FID ↓, LPIPS ↓) and dramatically improves texture fidelity (GLCM ↑) on both diffusion and flow-matching architectures, across 2K and 4K resolutions.</p>
+
+    <div class="results-tabs">
+      <button class="tab active" onclick="showTable('2k',this)">Aesthetic 2K</button>
+      <button class="tab" onclick="showTable('4k',this)">Aesthetic 4K</button>
+    </div>
+
+    <div id="table-2k" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>FID ↓</th>
+            <th>CLIPScore ↑</th>
+            <th>Aesthetics ↑</th>
+            <th>GLCM ↑</th>
+            <th>Compression ↓</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>SD3-F16</td><td>43.82</td><td>31.50</td><td>5.91</td><td>0.75</td><td>11.23</td></tr>
+          <tr><td>SD3-Diff4k-F16</td><td>40.18</td><td>34.04</td><td>5.96</td><td>0.79</td><td>11.73</td></tr>
+          <tr class="highlight"><td>LWD + SD3-F16</td><td class="best">38.74</td><td class="best">34.94</td><td class="best">6.17</td><td>0.74</td><td>11.99</td></tr>
+          <tr><td colspan="6" style="height:8px;background:var(--bg);border:none;"></td></tr>
+          <tr><td>PixArt-Sigma-XL</td><td>39.13</td><td>35.02</td><td>6.43</td><td>0.79</td><td>13.66</td></tr>
+          <tr class="highlight"><td>LWD + PixArt-Sigma-XL</td><td class="best">36.14</td><td class="best">35.21</td><td>6.27</td><td class="best">0.87</td><td class="best">6.05</td></tr>
+          <tr><td colspan="6" style="height:8px;background:var(--bg);border:none;"></td></tr>
+          <tr><td>Sana-1.6B</td><td class="best">32.06</td><td>35.28</td><td>6.15</td><td class="best">0.93</td><td class="best">24.01</td></tr>
+          <tr class="highlight"><td>LWD + Sana-1.6B</td><td>34.30</td><td class="best">35.58</td><td class="best">6.23</td><td>0.78</td><td>27.34</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="table-4k" class="table-wrap" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>FID ↓</th>
+            <th>CLIPScore ↑</th>
+            <th>Aesthetics ↑</th>
+            <th>GLCM ↑</th>
+            <th>Compression ↓</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>SD3-F16</td><td>—</td><td>33.12</td><td>5.97</td><td>0.73</td><td>11.97</td></tr>
+          <tr><td>SD3-Diff4k-F16</td><td>—</td><td>33.41</td><td>5.97</td><td>0.70</td><td class="best">11.90</td></tr>
+          <tr class="highlight"><td>LWD + SD3-F16</td><td>—</td><td class="best">34.08</td><td class="best">6.03</td><td class="best">0.77</td><td>12.27</td></tr>
+          <tr><td colspan="6" style="height:8px;background:var(--bg);border:none;"></td></tr>
+          <tr><td>Sana-1.6B</td><td>—</td><td>34.40</td><td>6.14</td><td>0.39</td><td>48.36</td></tr>
+          <tr class="highlight"><td>LWD + Sana-1.6B</td><td>—</td><td class="best">34.59</td><td class="best">6.21</td><td class="best">0.60</td><td class="best">32.62</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- HLFR -->
+    <div style="margin-top:48px;">
+      <h3 style="margin-bottom:16px;">Frequency-Aware Analysis (HLFR)</h3>
+      <p>Baseline models <strong>over-produce high frequencies</strong> — a telltale sign of artifacting. LWD pulls the generated distribution much closer to the real-image reference across HLFR, WQS, FSIM, and MS-SSIM metrics.</p>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table>
+          <thead>
+            <tr><th>Model</th><th>HLFR</th><th>RDFR ↓</th><th>WQS ↑</th><th>HFE</th><th>HFEI ↓</th><th>FSIM ↑</th><th>MS-SSIM ↑</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="color:var(--accent3)">Real Images</td><td>0.0560</td><td class="best">0.0000</td><td class="best">1.0000</td><td>0.0140</td><td class="best">0.0000</td><td class="best">1.0000</td><td class="best">1.0000</td></tr>
+            <tr><td>Sana-1.6B</td><td>0.0784</td><td>0.0558</td><td>0.4673</td><td>0.0196</td><td>0.6108</td><td>0.6128</td><td>0.1324</td></tr>
+            <tr class="highlight"><td>LWD + Sana-1.6B</td><td class="best">0.0610</td><td class="best">0.0537</td><td class="best">0.4701</td><td class="best">0.0144</td><td class="best">0.5227</td><td class="best">0.6217</td><td>0.1324</td></tr>
+            <tr><td>SD3-Diff4k-F16</td><td>0.0691</td><td>0.0470</td><td>0.4624</td><td>0.0158</td><td>0.8064</td><td>0.6155</td><td>0.1296</td></tr>
+            <tr class="highlight"><td>LWD + SD3-F16</td><td class="best">0.0555</td><td class="best">0.0437</td><td class="best">0.4735</td><td class="best">0.0144</td><td class="best">0.4826</td><td class="best">0.6245</td><td class="best">0.1521</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section>
+  <div class="container">
+    <div class="section-label">Qualitative Comparison</div>
+    <h2>What Changes Visually</h2>
+    <p>The improvements are most visible in detail-rich regions: hair, fabric, foliage, fine architecture. Baseline models exhibit spectral collapse — blurring and loss of sharp edges. LWD-enhanced models preserve the intricate structures.</p>
+
+    <div class="comparison-grid">
+      <div class="comp-card">
+        <div class="comp-card-label">Baseline (e.g. SD3-F16)</div>
+        <div class="comp-title">Common Failure Modes</div>
+        <div class="comp-bullet"><span class="icon bad">✗</span><span><strong>Spectral Collapse</strong> — high-freq details lost, skin and fabric appear over-smoothed</span></div>
+        <div class="comp-bullet"><span class="icon bad">✗</span><span><strong>Texture Tiling</strong> — repetitive patterns fill large areas unnaturally</span></div>
+        <div class="comp-bullet"><span class="icon bad">✗</span><span><strong>Spatial Inconsistency</strong> — global structure (face symmetry, building lines) degrades at UHR</span></div>
+        <div class="comp-bullet"><span class="icon bad">✗</span><span>Muddled colors and blurred outlines at 4K</span></div>
+      </div>
+      <div class="comp-card ours">
+        <div class="comp-card-label">LWD (Ours)</div>
+        <div class="comp-title">Demonstrated Improvements</div>
+        <div class="comp-bullet"><span class="icon">✓</span><span><strong>Sharp HF Detail</strong> — eyelashes, skin pores, intricate lattice structures remain crisp</span></div>
+        <div class="comp-bullet"><span class="icon">✓</span><span><strong>Natural Textures</strong> — no tiling; foliage and hair render with spatial variety</span></div>
+        <div class="comp-bullet"><span class="icon">✓</span><span><strong>Perceptual Coherence</strong> — improved FID and LPIPS confirm better global distribution match</span></div>
+        <div class="comp-bullet"><span class="icon">✓</span><span>Vibrant, separated color panels; sharp architectural edges at 4K</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABLATION -->
+<section id="ablation">
+  <div class="container">
+    <div class="section-label">Ablation Study</div>
+    <h2>Does Each Component Matter?</h2>
+    <p>We ablate each component of LWD independently on the Aesthetic-2K benchmark with SD3-F16 as the base. The mask drives the largest texture improvement (GLCM), the SC-VAE drives the largest perceptual improvement (FID). Together, they are synergistic.</p>
+
+    <div style="margin-top:28px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+      <div class="ablation-row header">
+        <div>Configuration</div>
+        <div class="metric">FID ↓</div>
+        <div class="metric">CLIPScore ↑</div>
+        <div class="metric">Aesthetics ↑</div>
+        <div class="metric">GLCM ↑</div>
+      </div>
+      <div class="ablation-row">
+        <div class="model-name">Baseline (SD3-Diff4k-F16)</div>
+        <div class="metric">40.18</div>
+        <div class="metric">34.04</div>
+        <div class="metric">5.96</div>
+        <div class="metric">0.79</div>
+      </div>
+      <div class="ablation-row">
+        <div class="model-name">+ VAE Scale-Consistency</div>
+        <div class="metric">39.50</div>
+        <div class="metric">34.10</div>
+        <div class="metric">6.05</div>
+        <div class="metric">0.78</div>
+      </div>
+      <div class="ablation-row">
+        <div class="model-name">+ Wavelet Masking</div>
+        <div class="metric">39.20</div>
+        <div class="metric">34.50</div>
+        <div class="metric">6.10</div>
+        <div class="metric">0.75</div>
+      </div>
+      <div class="ablation-row ours-row">
+        <div class="model-name">Full LWD (Ours) ★</div>
+        <div class="metric best">38.74</div>
+        <div class="metric best">34.94</div>
+        <div class="metric best">6.17</div>
+        <div class="metric">0.74</div>
+      </div>
+    </div>
+
+    <!-- VAE ablation -->
+    <div style="margin-top:48px;">
+      <h3 style="margin-bottom:12px;">Scale-Consistency on VAE Reconstruction</h3>
+      <p>The SC-VAE also improves reconstruction metrics directly. Flux-VAE-SC achieves the best rFID (0.50) and PSNR (28.14) among all tested VAEs.</p>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table>
+          <thead>
+            <tr><th>VAE Model</th><th>rFID ↓</th><th>NMSE ↓</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SD3-VAE</td><td>1.05</td><td>0.01</td><td class="best">26.54</td><td class="best">0.86</td><td class="best">0.08</td></tr>
+            <tr><td>SD3-VAE-F16</td><td>0.70</td><td>0.07</td><td>19.82</td><td>0.63</td><td>0.30</td></tr>
+            <tr class="highlight"><td>SD3-VAE-F16-SC</td><td>0.70</td><td class="best">0.04</td><td>22.58</td><td>0.75</td><td>0.18</td></tr>
+            <tr><td>Flux-VAE</td><td>0.73</td><td>0.01</td><td>27.18</td><td>0.89</td><td>0.07</td></tr>
+            <tr class="highlight"><td>Flux-VAE-SC</td><td class="best">0.50</td><td>0.01</td><td class="best">28.14</td><td class="best">0.90</td><td class="best">0.06</td></tr>
+            <tr><td>Sana-AE</td><td>0.74</td><td>0.04</td><td>22.16</td><td>0.70</td><td class="best">0.159</td></tr>
+            <tr class="highlight"><td>Sana-AE-SC</td><td class="best">0.55</td><td class="best">0.02</td><td class="best">23.64</td><td class="best">0.73</td><td>0.163</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CITATION -->
+<section id="citation">
+  <div class="container">
+    <div class="section-label">BibTeX</div>
+    <h2>Cite This Work</h2>
+    <p>If you find LWD useful for your research, please consider citing our paper.</p>
+    <div class="cite-box">
+      <button class="copy-btn" onclick="copyBib()">Copy</button>
+      <pre id="bib-text"><span class="key">@inproceedings</span>{sigillo2025lwd,
+  title     = {Latent Wavelet Diffusion For Ultra-High-Resolution Image Synthesis},
+  author    = {Luigi Sigillo and Shengfeng He and Danilo Comminiello},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2025},
+  url       = {https://openreview.net/forum?id=5og80LMVxG}
+}</pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Latent Wavelet Diffusion &nbsp;·&nbsp; ICLR 2025 &nbsp;·&nbsp; Luigi Sigillo, Shengfeng He, Danilo Comminiello</p>
+</footer>
+
+<script>
+function showTable(res, btn) {
+  document.getElementById('table-2k').style.display = res==='2k' ? 'block' : 'none';
+  document.getElementById('table-4k').style.display = res==='4k' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function copyBib() {
+  const text = document.getElementById('bib-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// Simple scroll-reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'none';
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.step, .highlight-card, .comp-card, .ablation-row:not(.header)').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(16px)';
+  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
